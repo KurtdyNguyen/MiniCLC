@@ -5,6 +5,7 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleSearch = async () => {
@@ -17,7 +18,6 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
     setMessage("");
     try {
       const data = await api.searchGene(searchTerm);
-      console.log("API response: ", data);
 
       if (Array.isArray(data) && data.length > 0) {
         setSearchResults(data);
@@ -36,6 +36,7 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
   };
 
   const handleFetch = async (accession) => {
+    setFetching(true);
     try {
       const data = await api.fetchByAccession(accession, searchTerm);
       if (data.status === "success") {
@@ -59,8 +60,9 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
           onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
           placeholder="Enter gene symbol"
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          disabled={fetching}
         />
-        <button onClick={handleSearch} disabled={loading}>
+        <button onClick={handleSearch} disabled={loading || fetching}>
           {loading ? "Searching..." : "Search NCBI DB"}
         </button>
       </div>
@@ -79,7 +81,14 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
         </div>
       )}
 
-      {searchResults && (
+      {fetching && (
+        <div className="fetching-overlay">
+          <div className="spinner"></div>
+          <p>Downloading sequence from NCBI...</p>
+        </div>
+      )}
+
+      {searchResults && !fetching && (
         <div className="search-results">
           <h3>Available References ({searchResults.length}):</h3>
           <div className="results-table">
@@ -108,8 +117,9 @@ function GeneSearch({ onGeneSelect, selectedGene }) {
                       <button
                         onClick={() => handleFetch(item.accession)}
                         className="small-btn"
+                        disabled={fetching}
                       >
-                        Fetch
+                        {fetching ? "Fetching..." : "Fetch"}
                       </button>
                     </td>
                   </tr>

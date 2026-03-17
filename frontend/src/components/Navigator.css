@@ -1,0 +1,8 @@
+/*
+    align the dropdown arrow icon to the right
+*/
+button[data-radix-collection-item] {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}

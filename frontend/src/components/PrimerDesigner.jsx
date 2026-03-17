@@ -19,27 +19,19 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
     }
 
     setLoading(true);
-    setMessage("");
+    setMessage("Designing primers...");
     setPrimerResults(null);
     setSelectedPrimers([]);
-
-    console.log("DEBUG: Starting primer design with:", {
-      gene: selectedGene,
-      mutation: selectedMutation,
-      params: params,
-    });
 
     try {
       const data = await api.designPrimers(
         selectedGene,
         selectedMutation,
-        params
+        params,
       );
-      console.log("DEBUG: Primer design API response:", data);
       if (data.error) {
         setMessage(`Error: ${data.error}`);
       } else if (!data.primers || data.primers.length === 0) {
-        console.log("DEBUG: No primers found. Response structure:", data);
         setMessage("No suitable primers found. Try adjusting your parameters.");
       } else {
         setPrimerResults(data);
@@ -94,7 +86,7 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
       table += `${primer.right_primer}\tMinus\t${
         primer.right_primer.length
       }\t1\t${primer.right_primer.length}\t${primer.tm.toFixed(
-        2
+        2,
       )}\t${reverseGC.toFixed(2)}\t0.00\t0.00\n`;
       table += `Product length\t${primer.product_size}\n`;
       table += `Mutation distance\tL=${primer.dist_to_left}bp, R=${primer.dist_to_right}bp\n`;
@@ -143,6 +135,13 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
     return (gcCount / sequence.length) * 100;
   };
 
+  const loadingSpinner = () => {
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+      <p>Designing primers...</p>
+    </div>;
+  };
+
   return (
     <div className="card">
       <h2>Primer Designer</h2>
@@ -173,6 +172,7 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
               min="100"
               max="1000"
             />
+            <div className="param-hint">Minimum PCR product length</div>
           </div>
           <div className="param-item">
             <label>Max Product Size (bp)</label>
@@ -185,6 +185,7 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
               min="200"
               max="2000"
             />
+            <div className="param-hint">Maximum PCR product length</div>
           </div>
           <div className="param-item">
             <label>Max Results</label>
@@ -195,6 +196,7 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
               min="1"
               max="50"
             />
+            <div className="param-hint">Primer pairs to return (1-50)</div>
           </div>
           <div className="param-item">
             <label>Action</label>
@@ -203,7 +205,13 @@ function PrimerDesigner({ selectedGene, selectedMutation }) {
               disabled={!selectedGene || !selectedMutation || loading}
               className="primary-btn"
             >
-              {loading ? "Processing..." : "Design Primers"}
+              {loading ? (
+                <>
+                  <span className="spinner-small"></span> Designing...
+                </>
+              ) : (
+                "Design Primers"
+              )}
             </button>
           </div>
         </div>
