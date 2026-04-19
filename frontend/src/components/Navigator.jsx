@@ -12,7 +12,6 @@ import "./Navigator.css";
 
 function Navigator() {
   const location = useLocation();
-  console.log("DEBUG Current pathname:", location.pathname);
   const PDComponents = [
     {
       title: "Gene Search",
@@ -42,16 +41,16 @@ function Navigator() {
   ];
 
   return (
-    <div className="w-full p-2 bg-blue-500 border-b-2 border-blue-800">
-      <div className="container mx-auto">
-        <NavigationMenu>
-          <NavigationMenuList className="flex flex-row space-x-2">
+    <div className="w-full bg-blue-500 border-b-2 border-blue-800 z-50 h-12">
+      <div className="container mx-auto h-full">
+        <NavigationMenu className="h-full items-center justify-start">
+          <NavigationMenuList className="flex flex-row space-x-2 h-full items-center px-2">
             <NavigationMenuItem>
-              <NavigationMenuTrigger className="w-40 bg-blue-500 hover:bg-blue-700 hover:text-lg data-[state=open]:bg-blue-700 data-[state=open]:text-lg text-white">
+              <NavigationMenuTrigger className="bg-blue-500 hover:bg-blue-700 hover:font-bold data-[state=open]:bg-blue-700 data-[state=open]:font-bold text-white">
                 Primer Designer
               </NavigationMenuTrigger>
-              <NavigationMenuContent className="absolute bg-white rounded-md shadow-lg mt-10 w-100 left-0">
-                <ul className="w-100 p-2">
+              <NavigationMenuContent className="w-lg rounded-md shadow-lg bg-white">
+                <ul className="p-2">
                   {PDComponents.map((component) => (
                     <ListItem
                       key={component.title}
@@ -67,18 +66,17 @@ function Navigator() {
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <NavigationMenuTrigger className="w-40 bg-blue-500 hover:bg-blue-700 hover:text-lg data-[state=open]:bg-blue-700 data-[state=open]:text-lg text-white">
+              <NavigationMenuTrigger className="bg-blue-500 hover:bg-blue-700 hover:font-bold data-[state=open]:bg-blue-700 data-[state=open]:font-bold text-white">
                 Cross Validation
               </NavigationMenuTrigger>
-              <NavigationMenuContent className="absolute bg-white rounded-md shadow-lg mt-10 ml-40 w-100 left-0">
-                <ul className="w-100 p-2">
+              <NavigationMenuContent className="w-lg rounded-md shadow-lg bg-white">
+                <ul className="p-2">
                   {CVComponents.map((component) => (
                     <ListItem
                       key={component.title}
                       title={component.title}
                       href={component.href}
                       isActive={location.pathname === component.href}
-                      className="hover:bg-blue-200 focus:bg-blue-200"
                     >
                       {component.description}
                     </ListItem>

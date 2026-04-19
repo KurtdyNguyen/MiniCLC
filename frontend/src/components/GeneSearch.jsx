@@ -1,135 +1,116 @@
 import React, { useState } from "react";
 import { api } from "./Api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Field, FieldGroup, FieldLabel } from "./ui/field";
+import { Button } from "./ui/button";
+import { Separator } from "@radix-ui/react-menubar";
+import { Spinner } from "./ui/spinner";
 
-function GeneSearch({ onGeneSelect, selectedGene }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState(null);
+function GeneSearch({
+  onGeneSelect,
+  selectedGene,
+  onSearchResults,
+  searchTerm,
+  onSearchTermChange,
+  fetching,
+}) {
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
-  const [message, setMessage] = useState("");
 
-  const handleSearch = async () => {
+  const handleSearch = async (e) => {
+    e?.preventDefault();
     if (!searchTerm.trim()) {
-      setMessage("Enter a gene symbol!");
+      toast.warning("Enter a gene symbol!");
       return;
     }
 
     setLoading(true);
-    setMessage("");
     try {
       const data = await api.searchGene(searchTerm);
 
       if (Array.isArray(data) && data.length > 0) {
-        setSearchResults(data);
+        onSearchResults(data);
         onGeneSelect(searchTerm);
-        setMessage(`Found ${data.length} reference(s) for ${searchTerm}`);
       } else {
-        setMessage("Found no results!");
-        setSearchResults(null);
+        toast.error("Found no results!", {
+          description: `No references found for "${searchTerm}"`,
+          action: {
+            label: "Copy",
+            onClick: () =>
+              navigator.clipboard.writeText(
+                `No references found for "${searchTerm}"`,
+              ),
+          },
+        });
+        onSearchResults(null);
       }
     } catch (error) {
-      setMessage(`Error: ${error.message}`);
-      setSearchResults(null);
+      toast.error("Search failed!", {
+        description: error.message,
+        action: {
+          label: "Copy",
+          onClick: () => navigator.clipboard.writeText(error.message),
+        },
+      });
+      onSearchResults(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFetch = async (accession) => {
-    setFetching(true);
-    try {
-      const data = await api.fetchByAccession(accession, searchTerm);
-      if (data.status === "success") {
-        setMessage(`Successfully fetched ${accession}`);
-      } else {
-        setMessage(`Failed to fetch: ${data.error}`);
-      }
-    } catch (error) {
-      setMessage(`Error: ${error.message}`);
-    }
-  };
-
   return (
-    <div className="card">
-      <h2>Fetch gene references</h2>
-
-      <div className="input-group">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
-          placeholder="Enter gene symbol"
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          disabled={fetching}
-        />
-        <button onClick={handleSearch} disabled={loading || fetching}>
-          {loading ? "Searching..." : "Search NCBI DB"}
-        </button>
-      </div>
-
-      {selectedGene && (
-        <div className="current-gene">
-          <strong>Current gene:</strong> {selectedGene}
-        </div>
-      )}
-
-      {message && (
-        <div
-          className={`message ${message.includes("Error") ? "error" : "info"}`}
-        >
-          {message}
-        </div>
-      )}
-
-      {fetching && (
-        <div className="fetching-overlay">
-          <div className="spinner"></div>
-          <p>Downloading sequence from NCBI...</p>
-        </div>
-      )}
-
-      {searchResults && !fetching && (
-        <div className="search-results">
-          <h3>Available References ({searchResults.length}):</h3>
-          <div className="results-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Accession</th>
-                  <th>Description</th>
-                  <th>Length</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {searchResults.map((item, index) => (
-                  <tr key={index}>
-                    <td>
-                      <strong>{item.accession}</strong>
-                    </td>
-                    <td>{item.title}</td>
-                    <td>
-                      {item.length
-                        ? `${item.length.toLocaleString()} bp`
-                        : "N/A"}
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleFetch(item.accession)}
-                        className="small-btn"
-                        disabled={fetching}
-                      >
-                        {fetching ? "Fetching..." : "Fetch"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
+    <Card className="w-full border-none p-4">
+      <CardHeader>
+        <CardTitle>Fetch gene references</CardTitle>
+        <CardDescription className="text-gray-500">
+          Enter the gene symbol or the accession ID directly to get the
+          reference sequence
+        </CardDescription>
+      </CardHeader>
+      <Separator />
+      <CardContent className="flex flex-col gap-4 pt-4">
+        <form onSubmit={handleSearch}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="gene-symbol-genesearch">
+                Gene Symbol
+              </FieldLabel>
+              <div className="flex gap-2">
+                <input
+                  id="gene-symbol-genesearch"
+                  value={searchTerm}
+                  onChange={(e) =>
+                    onSearchTermChange(e.target.value.toUpperCase())
+                  }
+                  placeholder="HBB, ACVR1, etc."
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  disabled={fetching}
+                  className="px-2 border bg-white"
+                />
+                <Button
+                  onClick={handleSearch}
+                  disabled={loading || fetching}
+                  variant="default"
+                  className="inset-ring-2 p-1"
+                >
+                  {loading ? (
+                    <Spinner className="animate-spin" />
+                  ) : (
+                    "Search NCBI DB"
+                  )}
+                </Button>
+              </div>
+            </Field>
+          </FieldGroup>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

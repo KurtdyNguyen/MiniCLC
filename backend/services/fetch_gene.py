@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import sqlite3
+import re
 from Bio import Entrez, SeqIO
 from utils.paths import SQL_DIR, DB_PATH, get_gene_dir
 Entrez.email = "leminhhlls2002@gmail.com"
@@ -52,6 +53,25 @@ def main():
                 print(f"[!] Invalid choice: {n}")
 
 def search_gene(gene_name, retmax = 10):
+    if is_accession(gene_name):
+        print(f"[*] Detected accession format, fetching summary for {gene_name}...")
+        try:
+            handle = handle = Entrez.esummary(db="nucleotide", id=gene_name)
+            records = Entrez.read(handle)
+            handle.close()
+            if not records:
+                return []
+            rec = records[0] #type: ignore
+            return [{
+                "id": rec["Id"],
+                "accession": rec["AccessionVersion"],
+                "title": rec["Title"],
+                "length": rec.get("Length", 0)
+            }]
+        except Exception as e:
+            print(f"[!] Failed to fetch accession summary: {e}")
+            return []
+
     print(f"[*] Searching Entrez for {gene_name}...")
     search_term = f"{gene_name}[Gene] AND Homo sapiens[Organism]"
     handle = Entrez.esearch(
@@ -159,6 +179,8 @@ def load_gb_to_sql(gbfile):
     conn.commit()
     conn.close()
 
+def is_accession(term):
+    return bool(re.match(r'^[A-Z]{1,2}_\d+(\.\d+)?$', term.strip()))
 
 if __name__ == "__main__":
     main()

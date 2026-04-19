@@ -108,7 +108,7 @@ def fetch_by_accession():
     Example JSON:
     {
         "accession": "NM_001105.5",
-        "gene_symbol": "ACVR1"  # optional, for folder organization
+        "gene_symbol": "ACVR1"  #optional, for folder organization
     }
     """
     data = request.get_json()

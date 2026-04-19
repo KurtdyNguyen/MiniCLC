@@ -3,6 +3,7 @@ const path = require("path");
 
 console.log("Starting MiniCLC servers");
 
+//run Python in virtual environment with libraries in that dir
 const backend = spawn(".\\Scripts\\python.exe", ["app.py"], {
   cwd: path.join(__dirname, "../backend"),
   stdio: "inherit",

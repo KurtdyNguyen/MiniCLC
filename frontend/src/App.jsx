@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "sonner";
 import "./App.css";
 import Navigator from "./components/Navigator";
 import GeneSearchPage from "./pages/GeneSearchPage";
@@ -14,12 +15,13 @@ import PrimerDesignPage from "./pages/PrimerDesignPage";
 function App() {
   return (
     <Router>
+      <Toaster position="bottom-center" closeButton richColors />
       <div className="min-w-screen bg-background">
         <Navigator />
 
         <main className="container mx-auto px-2 py-4">
           <Routes>
-            <Route path="/" element={<Navigate to="/gene-search" replace />} />
+            <Route path="/" element={<Navigate to="/gene-search" />} />
             <Route path="/gene-search" element={<GeneSearchPage />} />
             <Route path="/mutations" element={<MutationManagerPage />} />
             <Route path="/primer-design" element={<PrimerDesignPage />} />

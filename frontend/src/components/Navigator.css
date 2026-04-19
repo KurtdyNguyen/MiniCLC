@@ -1,8 +1,16 @@
 /*
-    align the dropdown arrow icon to the right
+  align the dropdown arrow icon to the right
 */
 button[data-radix-collection-item] {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
+}
+
+/*
+  target the direct div child(not grandchild) of shadcn's NavigationMenu(renders as nav)
+  
+*/
+nav > div:last-child {
+  justify-content: flex-start !important;
 }
